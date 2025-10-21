@@ -36,6 +36,7 @@ interface UseGemDataReturn {
   isLoading: boolean;
   isRefreshing: boolean;
   isError: boolean;
+  error: Error | null;
 
   // Metadata
   totalFound: number;
@@ -86,16 +87,16 @@ const fetchGems = async (options: UseGemDataOptions): Promise<GemResponse> => {
   
   // Handle new API format
   if (data.success !== undefined) {
-    return {
-      gems: data.data || [],
-      metadata: {
-        totalFound: data.metadata?.totalFound || 0,
-        lastRefresh: data.metadata?.lastRefresh || new Date().toISOString(),
-        source: data.metadata?.apiSource || 'api',
-        category: data.metadata?.category || 'meme',
-        network: 'solana'
-      }
-    };
+      return {
+        gems: data.data || [],
+        metadata: {
+          totalFound: data.metadata?.totalFound || 0,
+          lastUpdated: data.metadata?.lastRefresh || new Date().toISOString(),
+          scanDuration: 0,
+          nextScanIn: 0,
+          source: data.metadata?.apiSource || 'api'
+        }
+      };
   }
   
   // Handle legacy format
@@ -243,7 +244,7 @@ export const useGemData = (options: UseGemDataOptions = {}): UseGemDataReturn =>
   }, [gemResponse?.gems, defaultOptions.minAiScore]);
 
   const totalFound = gemResponse?.metadata?.totalFound || gems.length;
-  const lastUpdated = gemResponse?.metadata?.lastRefresh || null;
+  const lastUpdated = gemResponse?.metadata?.lastUpdated || null;
   const source = gemResponse?.metadata?.source || 'unknown';
 
   return {
@@ -255,6 +256,7 @@ export const useGemData = (options: UseGemDataOptions = {}): UseGemDataReturn =>
     isLoading,
     isRefreshing: isFetching && !isLoading,
     isError: isError || false,
+    error: error || null,
     
     // Metadata
     totalFound,

@@ -8,7 +8,7 @@ interface LogoSource {
   priority: number;
 }
 
-interface TokenLogo {
+export interface TokenLogo {
   symbol: string;
   address?: string;
   logoUrl: string;
@@ -69,7 +69,7 @@ export class DynamicLogoService {
         mode: 'cors',
         cache: 'force-cache'
       });
-      return response.ok && response.headers.get('content-type')?.startsWith('image/');
+      return response.ok && (response.headers.get('content-type')?.startsWith('image/') ?? false);
     } catch {
       return false;
     }

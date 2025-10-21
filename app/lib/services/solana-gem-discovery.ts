@@ -277,7 +277,7 @@ export class SolanaGemDiscovery {
     return (priceScore + volumeScore) / 2;
   }
 
-  private getSentimentClassification(gem: SolanaGem): string {
+  private getSentimentClassification(gem: SolanaGem): 'very_bearish' | 'bearish' | 'neutral' | 'bullish' | 'very_bullish' {
     const score = this.calculateSentimentScore(gem);
 
     if (score > 0.8) return "very_bullish";
@@ -394,4 +394,4 @@ export class SolanaGemDiscovery {
 
 // Export singleton instance
 export const solanaGemDiscovery = new SolanaGemDiscovery();
-export type { AIScoreFactors, SolanaGemDiscoveryOptions }; 
+export type { AIScoreFactors, SolanaGemDiscoveryOptions };

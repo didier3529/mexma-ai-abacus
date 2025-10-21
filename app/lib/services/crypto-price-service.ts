@@ -133,3 +133,4 @@ export class CryptoPriceService {
 
 export const cryptoPriceService = CryptoPriceService.getInstance();
 
+
