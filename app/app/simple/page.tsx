@@ -1,4 +1,4 @@
-export default function Dashboard() {
+export default function SimplePage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
@@ -31,7 +31,7 @@ export default function Dashboard() {
         
         <div className="mt-8 text-center">
           <p className="text-gray-400">
-            🎉 Deployment successful! The app is working properly.
+            Deployment successful! The app is working properly.
           </p>
         </div>
       </div>
