@@ -1,7 +1,8 @@
-# Ignore everything except the app directory
-*
-!app/
-!vercel.json
-!README.md
-!DEPLOYMENT_GUIDE.md
-!VERCEL_404_TROUBLESHOOTING.md
+# Ignore unnecessary files but keep app directory
+.git/
+node_modules/
+.next/
+.env*
+*.log
+.DS_Store
+Thumbs.db
