@@ -1,20 +1,20 @@
 
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
-import { 
-  Users,
-  TrendingUp,
-  TrendingDown,
-  Heart,
-  Building,
-  Target,
-  Globe
+import {
+    Building,
+    Globe,
+    Heart,
+    Target,
+    TrendingDown,
+    TrendingUp,
+    Users
 } from 'lucide-react'
-import UserGrowthChart from './user-growth-chart'
-import SocialGrowthChart from './social-growth-chart'
 import InstitutionalAdoptionChart from './institutional-adoption-chart'
+import SocialGrowthChart from './social-growth-chart'
+import { Badge } from './ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import UserGrowthChart from './user-growth-chart'
 
 // Mock adoption data
 const adoptionMetrics = [

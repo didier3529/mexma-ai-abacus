@@ -1,22 +1,19 @@
 
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Shield, 
-  Activity, 
-  DollarSign, 
-  Users, 
-  Zap, 
-  Network,
-  AlertTriangle,
-  Eye,
-  Brain,
-  BarChart3,
-  Search
+import {
+    Activity,
+    AlertTriangle,
+    BarChart3,
+    Brain,
+    DollarSign,
+    Network,
+    Search,
+    Shield,
+    TrendingDown,
+    TrendingUp
 } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 
 interface MetricCardProps {
   title: string

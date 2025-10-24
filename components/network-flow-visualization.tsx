@@ -1,10 +1,10 @@
 
 'use client'
 
-import { Network, GitBranch, Zap, Activity, Eye, Shield } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Activity, Eye, GitBranch, Network, Shield, Zap } from 'lucide-react'
 import ForceDirectedGraph from './force-directed-graph'
 import SankeyDiagram from './sankey-diagram'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 
 interface NetworkNode {
   id: string

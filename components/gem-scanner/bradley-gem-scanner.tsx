@@ -2,8 +2,9 @@
 
 import { useHydration } from "@/components/ui/hydration-safe";
 import { useGemData } from "@/hooks/use-gem-data";
-import { RefreshCw, Search } from "lucide-react";
+import { Activity, BarChart3, RefreshCw, Search } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 // BULLETPROOF: Safe data formatting utilities
 const formatPrice = (price: string | number | undefined): string => {
@@ -135,21 +136,40 @@ const GemLogo: React.FC<{ gem: any; className?: string }> = ({
   const tryLogoSources = async () => {
     console.log(`[GemLogo] Trying to load logo for ${gem.symbol} (${gem.address})`);
     
+    // Known working logos for specific tokens
+    const knownLogos: { [key: string]: string } = {
+      'stSOL': 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj/logo.png'
+    };
+    
     const sources = [
-      // DexScreener (most reliable for Solana tokens)
+      // Try known working logos first
+      ...(knownLogos[gem.symbol] ? [knownLogos[gem.symbol]] : []),
+      // Try Solana token list
+      `https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${gem.address}/logo.png`,
+      // DexScreener alternative format
+      `https://dd.dexscreener.com/ds-data/tokens/${gem.address}.png`,
+      // DexScreener Solana format
       `https://dd.dexscreener.com/ds-data/tokens/solana/${gem.address}.png`,
-      // Solana FM
-      `https://img.solana.fm/token/${gem.address}?size=64`,
+      // Jupiter token list
+      `https://token-list-api.solana.cloud/v1/list?name=${gem.address}`,
       // Trust Wallet assets
       `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/assets/${gem.address}/logo.png`,
-      // Jupiter token list
-      `https://token-list-api.solana.cloud/v1/list?name=${gem.address}`
+      // CoinGecko API (with proper headers)
+      `https://assets.coingecko.com/coins/images/18369/large/stSOL.png`,
+      // Alternative CoinGecko format
+      `https://assets.coingecko.com/coins/images/solana/${gem.address}/large/${gem.symbol.toLowerCase()}.png`
     ];
 
     for (const url of sources) {
       try {
         console.log(`[GemLogo] Trying source: ${url}`);
-        const response = await fetch(url, { method: 'HEAD' });
+        const response = await fetch(url, { 
+          method: 'HEAD',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'image/*'
+          }
+        });
         if (response.ok) {
           console.log(`[GemLogo] Found logo at: ${url}`);
           setLogoUrl(url);
@@ -178,8 +198,8 @@ const GemLogo: React.FC<{ gem: any; className?: string }> = ({
   }, [gem.address]);
 
   const fallbackLogo = (
-    <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center font-mono font-bold text-black text-sm border border-cyan-500/30">
-      {gem.symbol.charAt(0)}
+    <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center font-mono font-bold text-white text-xs border border-gray-500/30">
+      {gem.symbol.substring(0, 2)}
     </div>
   );
 
@@ -284,208 +304,178 @@ export const BradleyGemScanner: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header - Clean Professional Style */}
-      <div className="bg-black/90 backdrop-blur-sm border-b border-gray-800/50 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Search className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-orange-500 tracking-tight">Gem Scanner</h1>
-              <p className="text-gray-300 text-sm font-medium">Real-time cryptocurrency gem discovery & analysis</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-2 bg-green-500/10 px-3 py-1.5 rounded-full border border-green-500/20">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-green-400 text-sm font-semibold">Live</span>
-            </div>
-            
-            <button
-              onClick={handleRefresh}
-              disabled={loading}
-              className="p-2.5 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-all duration-200 border border-gray-700/50 disabled:opacity-50"
-              title="Refresh gem data"
-            >
-              <RefreshCw className={`h-4 w-4 text-gray-300 ${loading ? "animate-spin" : ""}`} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-4 hover:bg-gray-900/70 transition-colors">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400 mb-1 font-medium">Total Gems</p>
-              <p className="text-2xl font-bold text-white">{gems.length}</p>
-            </div>
-            <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center">
-              <Search className="h-5 w-5 text-orange-400" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-4 hover:bg-gray-900/70 transition-colors">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400 mb-1 font-medium">Scanner Status</p>
-              <p className="text-lg font-semibold text-green-400">Active</p>
-            </div>
-            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-4 hover:bg-gray-900/70 transition-colors">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400 mb-1 font-medium">Last Updated</p>
-              <p className="text-lg font-semibold text-blue-400">Now</p>
-            </div>
-            <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-              <RefreshCw className="h-5 w-5 text-blue-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Gems List */}
-      <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden">
-        <div className="p-4 border-b border-gray-700">
-          <h3 className="text-lg font-semibold text-white">Discovered Gems</h3>
-          <p className="text-sm text-gray-400 mt-1">Real-time cryptocurrency discoveries</p>
-        </div>
-
-          {/* Gem Cards */}
-          <div className="space-y-3">
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-white animate-pulse">
-                    Scanning for gems...
-                  </span>
-                </div>
+      <Card className="bg-gray-900/50 border-gray-800">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Activity className="w-5 h-5 text-orange-500" />
+            <span className="mexma-text-gradient">Gem Scanner</span>
+            <div className="ml-auto flex items-center space-x-4 text-sm">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-gray-400">Real-time Gem Discovery</span>
               </div>
-            ) : error ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-red-400 text-center">
-                  <div className="text-2xl mb-2">⚠️</div>
-                  <div>Scanner Error</div>
-                  <div className="text-sm text-gray-400 mt-1">
-                    {typeof error === 'string' ? error : 'Connection failed'}
+              <div className="flex items-center space-x-1">
+                <BarChart3 className="w-4 h-4 text-green-400" />
+                <span className="text-green-400">{gems.length} <span className="mexma-text-gradient">Gems Active</span></span>
+              </div>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Gem Discovery Analysis</h3>
+              <div className="space-y-3">
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-white animate-pulse">
+                        Scanning for gems...
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : !filteredGems || filteredGems.length === 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-gray-400 text-center">
-                  <div className="text-2xl mb-2">🔍</div>
-                  <div>No meme gems found</div>
-                  <div className="text-sm text-gray-500 mt-1">Try refreshing</div>
-                </div>
-              </div>
-            ) : (
-              filteredGems.map((gem, index) => {
-                const priceChange = formatPriceChange(gem.priceChange24h);
-                const aiScore = gem.aiScore || 0;
-
-                return (
-                  <div
-                    key={`${gem.address || gem.symbol}-${index}`}
-                    className="relative overflow-hidden bg-gray-800/30 hover:bg-gray-700/40 border border-gray-600 hover:border-gray-500 p-4 transition-all duration-200 group"
-                  >
-                    {/* Gem Card Content */}
-                    <div className="flex items-center justify-between">
-                      {/* Left: Token Info with REAL LOGOS */}
-                      <div className="flex items-center space-x-4">
-                        <GemLogo gem={gem} />
-                        <div>
-                          <div className="text-white text-lg font-bold font-mono uppercase tracking-wide">
-                            {gem.symbol}
-                          </div>
-                          <div className="text-gray-400 text-sm">
-                            {gem.exchange} • solana
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Center: Price Data */}
-                      <div className="flex items-center space-x-6">
-                        <div className="text-center">
-                          <div className="text-white text-lg font-mono font-bold">
-                            ${gem.priceUsd}
-                          </div>
-                          <div
-                            className={`text-sm font-mono font-bold ${
-                              priceChange >= 0 ? "text-green-400" : "text-red-400"
-                            }`}
-                          >
-                            {priceChange >= 0 ? "+" : ""}
-                            {priceChange.toFixed(2)}%
-                          </div>
-                        </div>
-
-                        <div className="text-center">
-                          <div className="text-gray-300 text-sm font-mono">
-                            Vol: ${(gem.volume24h / 1000000).toFixed(2)}M
-                          </div>
-                          <div className="text-gray-400 text-xs">
-                            MCap: ${(gem.marketCap / 1000000).toFixed(1)}M
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right: AI Score - KEEP IN CURRENT POSITION */}
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-orange-400">
-                          {aiScore}
-                        </div>
-                        <div className="text-xs px-3 py-1 rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-400 font-semibold uppercase tracking-wider">
-                          SCORE
-                        </div>
+                ) : error ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-red-400 text-center">
+                      <div className="text-2xl mb-2">⚠️</div>
+                      <div>Scanner Error</div>
+                      <div className="text-sm text-gray-400 mt-1">
+                        {typeof error === 'string' ? error : 'Connection failed'}
                       </div>
                     </div>
-
-                    {/* Address Copy Button */}
-                    {gem.address && gem.address !== "unknown" && (
-                      <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => copyToClipboard(gem.address)}
-                          className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-white rounded font-mono transition-colors"
-                        >
-                          {copiedAddress === gem.address ? "✓ Copied" : "Copy Address"}
-                        </button>
-                      </div>
-                    )}
                   </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+                ) : !filteredGems || filteredGems.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-gray-400 text-center">
+                      <div className="text-2xl mb-2">🔍</div>
+                      <div>No meme gems found</div>
+                      <div className="text-sm text-gray-500 mt-1">Try refreshing</div>
+                    </div>
+                  </div>
+                ) : (
+                  filteredGems.map((gem, index) => {
+                    const priceChange = formatPriceChange(gem.priceChange24h);
+                    const aiScore = gem.aiScore || 0;
 
-        {/* Footer */}
-        <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-300">
-                SOLANA MEME SCANNER • {filteredGems.length} GEMS ACTIVE
-              </span>
+                    return (
+                      <div
+                        key={`${gem.address || gem.symbol}-${index}`}
+                        className="relative overflow-hidden bg-gray-800/30 hover:bg-gray-700/40 border border-gray-600 hover:border-gray-500 p-4 transition-all duration-200 group"
+                      >
+                        {/* Gem Card Content */}
+                        <div className="flex items-center justify-between">
+                          {/* Left: Token Info with REAL LOGOS */}
+                          <div className="flex items-center space-x-4">
+                            <GemLogo gem={gem} />
+                            <div>
+                              <div className="text-white text-lg font-bold font-mono uppercase tracking-wide">
+                                {gem.symbol}
+                              </div>
+                              <div className="text-gray-400 text-sm">
+                                {gem.exchange} • solana
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Center: Price Data */}
+                          <div className="flex items-center space-x-6">
+                            <div className="text-center">
+                              <div className="text-white text-lg font-mono font-bold">
+                                ${gem.priceUsd}
+                              </div>
+                              <div
+                                className={`text-sm font-mono font-bold ${
+                                  priceChange >= 0 ? "text-green-400" : "text-red-400"
+                                }`}
+                              >
+                                {priceChange >= 0 ? "+" : ""}
+                                {priceChange.toFixed(2)}%
+                              </div>
+                            </div>
+
+                            <div className="text-center">
+                              <div className="text-gray-300 text-sm font-mono">
+                                Vol: ${(gem.volume24h / 1000000).toFixed(2)}M
+                              </div>
+                              <div className="text-gray-400 text-xs">
+                                MCap: ${(gem.marketCap / 1000000).toFixed(1)}M
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right: AI Score */}
+                          <div className="text-center">
+                            <div className="text-2xl font-bold mexma-text-gradient mb-1">
+                              {aiScore}
+                            </div>
+                            <div className="text-xs px-2 py-1 rounded-md border border-orange-500/20 bg-orange-500/5 text-orange-400 font-medium uppercase tracking-wider">
+                              SCORE
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Address Copy Button */}
+                        {gem.address && gem.address !== "unknown" && (
+                          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => copyToClipboard(gem.address)}
+                              className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-white rounded font-mono transition-colors"
+                            >
+                              {copiedAddress === gem.address ? "✓ Copied" : "Copy Address"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
-            <div className="text-sm text-gray-400">
-              {lastUpdated
-                ? `Last scan: ${new Date(lastUpdated).toLocaleTimeString()}`
-                : "Initializing..."}
+            
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Scanner Metrics</h3>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1 font-medium">Total Gems</p>
+                      <p className="text-2xl font-bold mexma-text-gradient">{gems.length}</p>
+                    </div>
+                    <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                      <Search className="h-5 w-5 text-orange-400" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1 font-medium">Scanner Status</p>
+                      <p className="text-lg font-semibold text-green-400">Active</p>
+                    </div>
+                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                      <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1 font-medium">Last Updated</p>
+                      <p className="text-lg font-semibold text-blue-400">Now</p>
+                    </div>
+                    <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                      <RefreshCw className="h-5 w-5 text-blue-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

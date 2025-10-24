@@ -1,19 +1,19 @@
 
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
-import { 
-  Activity,
-  Users,
-  DollarSign,
-  Shield,
-  TrendingUp,
-  TrendingDown
+import {
+    Activity,
+    DollarSign,
+    Shield,
+    TrendingDown,
+    TrendingUp,
+    Users
 } from 'lucide-react'
 import ActiveAddressChart from './active-address-chart'
-import TransactionVolumeChart from './transaction-volume-chart'
 import NVTRatioChart from './nvt-ratio-chart'
+import TransactionVolumeChart from './transaction-volume-chart'
+import { Badge } from './ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 
 // Mock on-chain data
 const onChainMetrics = [
